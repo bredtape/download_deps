@@ -23,8 +23,7 @@ for depfile in "$SRC_DIR"/*.go.txt; do
     (
         cd "$projdir"
         go mod init "local/$project" >/dev/null
-        while IFS= read -r dep || [[ -n "$dep" ]]; do
-            dep="${dep%%[[:space:]]*}"
+        while read -r dep _ || [[ -n "$dep" ]]; do
             [[ -z "$dep" || "$dep" == \#* ]] && continue
             go get "${dep%%@*}@latest"
         done < "$depfile"
@@ -33,8 +32,7 @@ for depfile in "$SRC_DIR"/*.go.txt; do
 done
 
 for installfile in "$SRC_DIR"/*.go_install.txt; do
-    while IFS= read -r pkg || [[ -n "$pkg" ]]; do
-        pkg="${pkg%%[[:space:]]*}"
+    while read -r pkg _ || [[ -n "$pkg" ]]; do
         [[ -z "$pkg" || "$pkg" == \#* ]] && continue
         go install "${pkg%%@*}@latest"
         echo "OK: install ${pkg%%@*}"
