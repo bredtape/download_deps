@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 # Usage: ./fetch-go-deps.sh <dir-with-go.txt-files> [output.zip]
 # Each *.go.txt file: one module path per line (any @version suffix is ignored,
-# latest is fetched). Produces a single bundle containing:
-#   go/pkg/mod/...        shared module cache (incl. cache/download proxy tree)
-#   projects/<name>/go.mod  one manifest per .go.txt, for jfrog rt go-publish
+# latest is fetched). Produces a single bundle containing the GOPROXY-layout
+# tree (cache/download) with all modules, ready for upload via "jf rt u".
 set -euo pipefail
 
 SRC_DIR="$(realpath -e "${1:?dir with *.go.txt files}")"
@@ -29,6 +28,6 @@ for depfile in "$SRC_DIR"/*.go.txt; do
     echo "OK: $project"
 done
 
-(cd "$workdir" && zip -qr "$OUT_ZIP" "go/pkg/mod" "projects")
+(cd "$GOMODCACHE/cache" && zip -qr "$OUT_ZIP" "download" -x "download/sumdb/*")
 chmod -R u+w "$workdir" && rm -rf "$workdir"   # mod cache is read-only
 echo "Bundle: $OUT_ZIP"
